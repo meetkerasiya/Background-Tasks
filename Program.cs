@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 var services = builder.Services;
 //for bg services
 services.AddHostedService<MyBackgroundService>();
-
+services.AddScoped<IScopedService, MyScopedService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
