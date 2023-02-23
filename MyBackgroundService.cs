@@ -3,20 +3,25 @@
 public class MyBackgroundService : BackgroundService
 {
     private readonly ILogger<MyBackgroundService> _logger;
-    private readonly IScopedService _scopedService;
+    private readonly IServiceProvider _serviceProvider;
 
-    public MyBackgroundService(ILogger<MyBackgroundService> logger,IScopedService scopedService)
+    public MyBackgroundService(ILogger<MyBackgroundService> logger,IServiceProvider serviceProvider)
     {
         _logger = logger;
-        _scopedService = scopedService;
+        _serviceProvider = serviceProvider;
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("From MyBackgroundService: ExecuteAsync {dateTime}",DateTime.Now);
-            _scopedService.Write();
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                _logger.LogInformation("From MyBackgroundService: ExecuteAsync {dateTime}",DateTime.Now);
+                var scopedService = scope.ServiceProvider.GetRequiredService<IScopedService>();
+                scopedService.Write();
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
+           
         }
     }
 
